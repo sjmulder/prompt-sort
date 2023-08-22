@@ -13,12 +13,17 @@
 static const char usage[] =
 "usage: prompt-sort [-n] [-t count] [file]\n";
 
+/*
+ * Read entirety of f, returning a newly allocated null terminated
+ * buffer. The length is stored in lenp if not NULL.
+ */
 static char *
 read_all(FILE *f, const char *name, size_t *lenp)
 {
 	char *buf;
 	size_t cap=4096, len=0;
 
+	/* no need to guess buffer size if we can seek */
 	if (fseek(f, 0, SEEK_END) != -1) {
 		cap = (size_t)ftell(f) + 1;
 		if (fseek(f, 0, SEEK_SET) == -1)
@@ -42,6 +47,11 @@ read_all(FILE *f, const char *name, size_t *lenp)
 	return buf;
 }
 
+/*
+ * Replaces line endings with null terminators and returns an array of
+ * pointers to the starts of the lines. The array is also
+ * null terminated. Its length (count) is stored in lenp if not NULL.
+ */
 static char **
 to_lines(char *s, size_t *lenp)
 {
@@ -86,6 +96,10 @@ shuffle_ptrs(void **buf, size_t len)
 		swap_ptrs(&buf[i], &buf[rand() % len]);
 }
 
+/*
+ * Prompt for a choice between a and b. The prompt is repeated until
+ * either is chosen. Returns 0 for a, 1 for b.
+ */
 static int
 prompt_ab(const char *a, const char *b)
 {
@@ -103,6 +117,12 @@ prompt_ab(const char *a, const char *b)
 	}
 }
 
+/*
+ * Sort the array using binary insertion sort, prompting the user with
+ * choices. If 'top' is not 0, limits to sorting the top n items,
+ * reducing the number of copmarisons. Returns the number of items
+ * actually sorted, which is the lesser of n_lines and top (if not 0).
+ */
 static size_t
 prompt_sort(const char **lines, size_t n_lines, int top)
 {
