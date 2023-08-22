@@ -163,7 +163,7 @@ main(int argc, char **argv)
 	FILE *in_file = stdin;
 	int opt_n=0, opt_top=0, c;
 
-	while ((c = getopt(argc, argv, "nt:")) != -1)
+	while ((c = getopt(argc, argv, "hnt:")) != -1)
 		switch (c) {
 		case 'n': opt_n = 1; break;
 		case 't':
