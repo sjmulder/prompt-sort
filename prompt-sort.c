@@ -97,9 +97,11 @@ shuffle_ptrs(void **buf, size_t len)
 		swap_ptrs(&buf[i], &buf[rand() % len]);
 }
 
+enum { CHOOSE_A, CHOOSE_B, SKIP_B };
+
 /*
- * Prompt for a choice between a and b. The prompt is repeated until
- * either is chosen. Returns 0 for a, 1 for b.
+ * Prompt for a choice between a, b, or skipping b. The prompt is
+ * repeated until a choice is made. Returns one of the above enum.
  */
 static int
 prompt_ab(const char *a, const char *b)
@@ -109,12 +111,15 @@ prompt_ab(const char *a, const char *b)
 	fprintf(stderr, "  1. %s\n  2. %s\n", a, b);
 
 	while (1) {
-		fprintf(stderr, "choice? ");
+		fprintf(stderr, "1, 2 or [s]kip 2? ");
 		fflush(stderr);
 		fgets(buf, sizeof(buf), stdin);
 
-		if (buf[0] == '1') { fputc('\n', stderr); return 0; }
-		if (buf[0] == '2') { fputc('\n', stderr); return 1; }
+		switch (buf[0]) {
+		case '1': fputc('\n', stderr); return CHOOSE_A;
+		case '2': fputc('\n', stderr); return CHOOSE_B;
+		case 's': fputc('\n', stderr); return SKIP_B;
+		}
 	}
 }
 
@@ -137,10 +142,12 @@ prompt_sort(const char **lines, size_t n_lines, size_t top)
 
 		while (lo < hi) {
 			mid = lo + (hi-lo)/2;
-			if (prompt_ab(lines[mid], subject))
-				hi = mid;
-			else
-				lo = mid+1;
+
+			switch (prompt_ab(lines[mid], subject)) {
+			case CHOOSE_A: hi = mid; break;
+			case CHOOSE_B: lo = mid+1; break;
+			case SKIP_B: goto skip;
+			}
 		}
 
 		if (!top || lo < top) {
@@ -149,6 +156,7 @@ prompt_sort(const char **lines, size_t n_lines, size_t top)
 			lines[lo] = subject;
 			n_sorted++;
 		}
+	skip: ;
 	}
 
 	return n_sorted;
