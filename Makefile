@@ -3,6 +3,7 @@ PREFIX?=	/usr/local
 MANPREFIX?=	${PREFIX}/man
 
 RM?=		rm -f
+INSTALL?=	install
 
 CFLAGS+=	-Wall -Wextra
 
