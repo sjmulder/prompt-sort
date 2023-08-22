@@ -135,10 +135,11 @@ main(int argc, char **argv)
 	char *data, **lines;
 	size_t data_len, n_lines, i;
 	FILE *in_file = stdin;
-	int c;
+	int opt_n=0, c;
 
-	while ((c = getopt(argc, argv, "")) != -1) 
+	while ((c = getopt(argc, argv, "n")) != -1)
 		switch (c) {
+		case 'n': opt_n = 1; break;
 		default:
 			fputs(usage, stderr);
 			exit(EX_USAGE);
@@ -162,8 +163,12 @@ main(int argc, char **argv)
 	shuffle_ptrs((void **)lines, n_lines);
 	prompt_sort((const char **)lines, n_lines);
 
-	for (i=0; i<n_lines; i++)
-		printf("%3zu. %s\n", i+1, lines[i]);
+	if (opt_n)
+		for (i=0; i<n_lines; i++)
+			printf("%3zu. %s\n", i+1, lines[i]);
+	else
+		for (i=0; i<n_lines; i++)
+			printf("%s\n", lines[i]);
 
 	return 0;
 }

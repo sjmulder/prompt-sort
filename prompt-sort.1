@@ -6,12 +6,16 @@
 .Nd sort a file interactively
 .Sh SYNOPSIS
 .Nm
+.Op Fl n
 .Op Ar file
 .Sh DESCRIPTION
 Sorts lines in
 .Ar file
 .Pq or standard input if not given
 by presenting a series of choices to the user.
+Pass
+.Fl n
+to number the output.
 .Pp
 The prompts are output on standard error so that
 .Nm
@@ -25,7 +29,7 @@ on usage error.
 .Sh EXAMPLES
 Raking a list of games:
 .Bd -literal -offset indent
-$ prompt-sort games.txt
+$ prompt-sort -n games.txt
   1. ICO
   2. Zelda: The Minish Cap
 choice? 1
