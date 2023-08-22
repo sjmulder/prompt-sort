@@ -8,8 +8,6 @@
 #include <sysexits.h>
 #include <err.h>
 
-#define LEN(a)	(sizeof(a)/sizeof(*(a)))
-
 static const char usage[] =
 "usage: prompt-sort [-n] [-t count] [file]\n";
 
@@ -22,12 +20,15 @@ read_all(FILE *f, const char *name, size_t *lenp)
 {
 	char *buf;
 	size_t cap=4096, len=0;
+	long end;
 
 	/* no need to guess buffer size if we can seek */
 	if (fseek(f, 0, SEEK_END) != -1) {
-		cap = (size_t)ftell(f) + 1;
+		if ((end = ftell(f)) == -1)
+			err(1, "%s", name);
 		if (fseek(f, 0, SEEK_SET) == -1)
 			err(1, "%s", name);
+		cap = (size_t)end + 1;
 	}
 
 	if (!(buf = malloc(cap)))
@@ -124,7 +125,7 @@ prompt_ab(const char *a, const char *b)
  * actually sorted, which is the lesser of n_lines and top (if not 0).
  */
 static size_t
-prompt_sort(const char **lines, size_t n_lines, int top)
+prompt_sort(const char **lines, size_t n_lines, size_t top)
 {
 	size_t n_sorted=1, lo,hi,mid, i;
 	const char *subject;
@@ -142,7 +143,7 @@ prompt_sort(const char **lines, size_t n_lines, int top)
 				lo = mid+1;
 		}
 
-		if (!top || lo < (size_t)top) {
+		if (!top || lo < top) {
 			memmove(&lines[lo+1], &lines[lo],
 			    sizeof(*lines) * (n_sorted-lo));
 			lines[lo] = subject;
@@ -166,7 +167,7 @@ main(int argc, char **argv)
 		switch (c) {
 		case 'n': opt_n = 1; break;
 		case 't':
-			if ((opt_top = (int)atoi(optarg)) < 0)
+			if ((opt_top = atoi(optarg)) < 0)
 				err(EX_USAGE, "bad -t");
 			break;
 		default:
