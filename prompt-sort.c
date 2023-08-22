@@ -11,7 +11,7 @@
 #define LEN(a)	(sizeof(a)/sizeof(*(a)))
 
 static const char usage[] =
-"usage: ...\n";
+"usage: prompt-sort [-n] [-t count] [file]\n";
 
 static char *
 read_all(FILE *f, const char *name, size_t *lenp)

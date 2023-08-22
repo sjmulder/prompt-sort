@@ -2,7 +2,7 @@ prompt-sort
 ===========
 Sort a file interactively
 
-**prompt-sort** [**-n**] [*file*]
+**prompt-sort** [**-n**] [**-t** *count*] [*file*]
 
 Sorts lines in *file* (or standard input if not given) by presenting a
 series of choices to the user.
