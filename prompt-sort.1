@@ -14,24 +14,23 @@ Sorts lines in
 .Ar file
 .Pq or standard input if not given
 by presenting a series of choices to the user.
-.Pp
 The prompts are output on standard error so that
 .Nm
 may be used as part of a pipe, from an editor, etc.
 .Pp
-Options:
-.Bl -tag -width Ds
-.It Fl n
-Number the output.
-.It Fl t Ar count
-Limit the ranking to the top
+Pass
+.Fl n
+to number the output.
+.Pp
+Pass
+.Fl t Ar count
+to limit the ranking to the top
 .Ar count
 items.
 This is more efficient than using
 .Xr head 1
 on the output
 as it reduces the number of choices that must be made.
-.El
 .Sh EXIT STATUS
 Returns 0 on success,
 1 on error, or

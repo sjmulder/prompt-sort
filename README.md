@@ -10,15 +10,11 @@ series of choices to the user.
 The prompts are output on standard error so that **prompt-sort** may be
 used as part of a pipe, from an editor, etc.
 
-Options:
+Pass **-n** to number the output.
 
-**-n**
-: Number the output.
-
-**-t** *count*
-: Limit the ranking to the top *count* items. This is more efficient
-  than using [head](https://man.openbsd.org/head.1) on the output as it
-  reduces the number of choices that must be made.
+Pass **-t** *count* to limit the ranking to the top *count* items. This
+is more efficient than using [head](https://man.openbsd.org/head.1) on
+the output as it reduces the number of choices that must be made.
 
 Example
 -------
