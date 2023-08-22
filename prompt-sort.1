@@ -1,0 +1,43 @@
+.Dd August 22, 2023
+.Dt PROMPT-SORT 1
+.Os
+.Sh NAME
+.Nm prompt-sort
+.Nd sort a file interactively
+.Sh SYNOPSIS
+.Nm
+.Op Ar file
+.Sh DESCRIPTION
+Sorts lines in
+.Ar file
+.Pq or standard input if not given
+by presenting a series of choices to the user.
+.Sh EXIT STATUS
+Returns 0 on success,
+1 on error, or
+.Dv EX_USAGE
+.Pq 64
+on usage error.
+.Sh EXAMPLES
+Raking a list of games:
+.Bd -literal -offset indent
+$ prompt-sort games.txt
+  1. ICO
+  2. Zelda: The Minish Cap
+choice? 1
+
+  1. Zelda: The Minish Cap
+  2. Shadow of the Colossus
+choice? 2
+\&...
+
+  1. Death Stranding
+  2. The Last of Us Part II
+  3. Kirby's Return to Dream Land
+  4. ICO
+\&...
+  7. Mario Party 2
+.Ed
+.Sh AUTHORS
+.An Sijmen J. Mjulder
+.Aq Mt ik@sjmulder.nl
