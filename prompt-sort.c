@@ -61,7 +61,7 @@ to_lines(char *s, size_t *lenp)
 
 	if (!(ls = malloc(sizeof(*ls) * cap)))
 		err(1, NULL);
-
+	
 	for (; *s; s++) {
 		if (*s != '\n')
 			continue;
@@ -72,7 +72,7 @@ to_lines(char *s, size_t *lenp)
 			ls[len++] = s+1;
 		*s = '\0';
 	}
-
+	
 	if (lenp)
 		*lenp = len;
 
@@ -97,46 +97,24 @@ shuffle_ptrs(void **buf, size_t len)
 		swap_ptrs(&buf[i], &buf[rand() % len]);
 }
 
-enum { CHOICE_A, CHOICE_B, SKIP_A, SKIP_B, SKIP_BOTH };
-
-#define MAY_SKIP_A	0x1
-#define MAY_SKIP_B	0x2
-
 /*
- * Prompt for a choice between a, b, skipping b, or skipping both (with
- * the flag). The prompt is repeated until a choice is made. Returns
- * one of the above enum.
+ * Prompt for a choice between a and b. The prompt is repeated until
+ * either is chosen. Returns 0 for a, 1 for b.
  */
 static int
-prompt_ab(const char *a, const char *b, int flags)
+prompt_ab(const char *a, const char *b)
 {
 	char buf[64];
 
 	fprintf(stderr, "  1. %s\n  2. %s\n", a, b);
 
 	while (1) {
-		fprintf(stderr, "1, 2");
-		if (flags & MAY_SKIP_A)
-			fprintf(stderr, ", skip 1");
-		if (flags & MAY_SKIP_B)
-			fprintf(stderr, ", skip 2");
-		if ((flags & MAY_SKIP_A) && (flags & MAY_SKIP_B))
-			fprintf(stderr, ", skip both");
-		fprintf(stderr, "? ");
+		fprintf(stderr, "choice? ");
 		fflush(stderr);
 		fgets(buf, sizeof(buf), stdin);
 
-		if (strncmp(buf, "1", 1) == 0)
-			return CHOICE_A;
-		if (strncmp(buf, "2", 1) == 0)
-			return CHOICE_B;
-		if ((flags & MAY_SKIP_A) && !strncmp(buf, "skip 1", 6))
-			return SKIP_A;
-		if ((flags & MAY_SKIP_B) && !strncmp(buf, "skip 2", 6))
-			return SKIP_B;
-		if ((flags & MAY_SKIP_A) &&
-		    (flags & MAY_SKIP_B) && !strncmp(buf, "skip b", 6))
-			return SKIP_BOTH;
+		if (buf[0] == '1') { fputc('\n', stderr); return 0; }
+		if (buf[0] == '2') { fputc('\n', stderr); return 1; }
 	}
 }
 
@@ -149,73 +127,28 @@ prompt_ab(const char *a, const char *b, int flags)
 static size_t
 prompt_sort(const char **lines, size_t n_lines, size_t top)
 {
-	size_t n_sorted=0, a=0,b=1, lo,hi;
-	const char *sa, *sb;
+	size_t n_sorted=1, lo,hi,mid, i;
+	const char *subject;
 
-	/*
-	 * The front of the array up to n_sorted will be our 'sorted'
-	 * list. First, present all pairs in order until the user
-	 * selects our first 'sorted' item.
-	 */
-	while (!n_sorted) {
-		if (a >= n_lines || b >= n_lines)
-			return 0;
-
-		sa = lines[a];
-		sb = lines[b];
-
-		switch (prompt_ab(sa, sb, MAY_SKIP_A | MAY_SKIP_B)) {
-		case CHOICE_A:
-			lines[0] = sa;
-			lines[1] = sb;
-			n_sorted = 2;
-			break;
-
-		case CHOICE_B:
-			lines[0] = sb;
-			lines[1] = sa;
-			n_sorted = 2;
-			break;
-
-		case SKIP_A: a = b++; break;
-		case SKIP_B: b++; break;
-		case SKIP_BOTH: a = b+1; b = b+2; break;
-		}
-
-		fputc('\n', stderr);
-	}
-
-	/*
-	 * Now we have our first item on the sorted list, go in with
-	 * the insertion sort. 'b' continues to walk down the unsorted
-	 * list, and 'a' will be options for insert locations. The user
-	 * can only skip B because A is already in the list.
-	 */
-	for (b=b+1; b < n_lines; b++) {
-		sb = lines[b];
+	for (i=1; i<n_lines; i++) {
+		subject = lines[i];
 		lo = 0;
 		hi = n_sorted;
 
 		while (lo < hi) {
-			a = lo + (hi-lo)/2;
-			sa = lines[a];
-
-			switch (prompt_ab(sa, sb, MAY_SKIP_B)) {
-			case CHOICE_A: hi = a; break;
-			case CHOICE_B: lo = a+1; break;
-			case SKIP_B: goto skip;
-			}
-
-			fputc('\n', stderr);
+			mid = lo + (hi-lo)/2;
+			if (prompt_ab(lines[mid], subject))
+				hi = mid;
+			else
+				lo = mid+1;
 		}
 
 		if (!top || lo < top) {
 			memmove(&lines[lo+1], &lines[lo],
 			    sizeof(*lines) * (n_sorted-lo));
-			lines[lo] = sb;
+			lines[lo] = subject;
 			n_sorted++;
 		}
-	skip: ;
 	}
 
 	return n_sorted;
@@ -241,7 +174,7 @@ main(int argc, char **argv)
 			fputs(usage, stderr);
 			exit(EX_USAGE);
 		}
-
+	
 	argc -= optind;
 	argv += optind;
 
