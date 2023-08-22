@@ -102,22 +102,24 @@ shuffle_ptrs(void **buf, size_t len)
 
 /*
  * Prompt for a choice between a and b. The prompt is repeated until
- * either is chosen. Returns 0 for a, 1 for b.
+ * either is chosen. Returns 1 for a, -1 for b, 0 for equal -- like
+ * a normal comparator.
  */
 static int
-prompt_ab(const char *a, const char *b)
+prompt_cmp(const char *a, const char *b)
 {
 	char buf[64];
 
 	fprintf(stderr, "  1. %s\n  2. %s\n", a, b);
 
 	while (1) {
-		fprintf(stderr, "choice? ");
+		fprintf(stderr, "1, 2, (e)qual? ");
 		fflush(stderr);
 		fgets(buf, sizeof(buf), stdin);
 
-		if (buf[0] == '1') { fputc('\n', stderr); return 0; }
-		if (buf[0] == '2') { fputc('\n', stderr); return 1; }
+		if (buf[0] == '1') { fputc('\n', stderr); return  1; }
+		if (buf[0] == '2') { fputc('\n', stderr); return -1; }
+		if (buf[0] == 'e') { fputc('\n', stderr); return  0; }
 	}
 }
 
@@ -158,9 +160,10 @@ prompt_sort(const char **arr, size_t len, size_t limit)
 		while (lo < limit && lo < hi) {
 			sa = arr[a];
 
-			switch (prompt_ab(sa, sb)) {
-			case 0: lo = a+1; break;
-			case 1: hi = a;   break;
+			switch (prompt_cmp(sa, sb)) {
+			case -1: hi = a;        break;
+			case  0: lo = hi = a+1; break;
+			case  1: lo = a+1;      break;
 			}
 
 			a = lo + (hi-lo)/2;

@@ -22,11 +22,11 @@ Raking a top-3 of games:
     $ prompt-sort -t3 -n games.txt
       1. ICO
       2. Zelda: The Minish Cap
-    choice? 1
+    1, 2, (e)qual? 1
     
       1. Zelda: The Minish Cap
       2. Shadow of the Colossus
-    choice? 2
+    1, 2, (e)qual? 2
     ...
     
       1. Death Stranding
