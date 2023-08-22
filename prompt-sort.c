@@ -91,15 +91,15 @@ prompt_ab(const char *a, const char *b)
 {
 	char buf[64];
 
-	printf("  1. %s\n  2. %s\n", a, b);
+	fprintf(stderr, "  1. %s\n  2. %s\n", a, b);
 
 	while (1) {
-		printf("choice? ");
-		fflush(stdout);
+		fprintf(stderr, "choice? ");
+		fflush(stderr);
 		fgets(buf, sizeof(buf), stdin);
 
-		if (buf[0] == '1') { putchar('\n'); return 0; }
-		if (buf[0] == '2') { putchar('\n'); return 1; }
+		if (buf[0] == '1') { fputc('\n', stderr); return 0; }
+		if (buf[0] == '2') { fputc('\n', stderr); return 1; }
 	}
 }
 
