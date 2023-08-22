@@ -1,14 +1,13 @@
 prompt-sort
 ===========
-Sort a file interactively
+Sort a file interactively.
 
 **prompt-sort** [**-n**] [**-t** *count*] [*file*]
 
 Sorts lines in *file* (or standard input if not given) by presenting a
-series of choices to the user.
-
-The prompts are output on standard error so that **prompt-sort** may be
-used as part of a pipe, from an editor, etc.
+series of choices to the user. The prompts are output on standard error
+so that **prompt-sort** may be used as part of a pipe, from an editor,
+etc.
 
 Pass **-n** to number the output.
 
