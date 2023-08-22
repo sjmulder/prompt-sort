@@ -8,6 +8,9 @@
 #include <sysexits.h>
 #include <err.h>
 
+#define MIN(a,b)	((a)<(b)?(a):(b))
+#define MAX(a,b)	((a)>(b)?(a):(b))
+
 static const char usage[] =
 "usage: prompt-sort [-n] [-t count] [file]\n";
 
@@ -120,38 +123,66 @@ prompt_ab(const char *a, const char *b)
 
 /*
  * Sort the array using binary insertion sort, prompting the user with
- * choices. If 'top' is not 0, limits to sorting the top n items,
- * reducing the number of copmarisons. Returns the number of items
- * actually sorted, which is the lesser of n_lines and top (if not 0).
+ * choices. Returns number of sorted items, the lesser of 'len' and
+ * 'limit'. Items beyond the sorted portion of the array are junk.
  */
 static size_t
-prompt_sort(const char **lines, size_t n_lines, size_t top)
+prompt_sort(const char **arr, size_t len, size_t limit)
 {
-	size_t n_sorted=1, lo,hi,mid, i;
-	const char *subject;
+	size_t ns=1, a,b, lo,hi, i;
+	const char *sa, *sb;
 
-	for (i=1; i<n_lines; i++) {
-		subject = lines[i];
+	/*
+	 * arr[0..ns] is the sorted portion of the array
+	 * arr[ns..len] is the unsorted portion
+	 * A is a candidate insertion point (in sorted portion)
+	 * B is the insertion candidate (in unsorted portion)
+	 *
+	 * Insertion point is located with binary search:
+	 *
+	 * lo  is the current lower bound
+	 * hi  is the current upper bound
+	 *
+	 * Note that for the binary search to be optimal, we need to
+	 * start A halfway _all_ previous items, not halfway the current
+	 * top N (limit). In other words: presented with a random song,
+	 * it's unlikely to be in someone's top 10 favourite songs.
+	 */
+
+	for (b=1; b<len; b++) {
+		sb = arr[b];
 		lo = 0;
-		hi = n_sorted;
+		hi = ns;
+		a = MIN(hi-1, b/2);
 
-		while (lo < hi) {
-			mid = lo + (hi-lo)/2;
-			if (prompt_ab(lines[mid], subject))
-				hi = mid;
-			else
-				lo = mid+1;
+		fprintf(stderr, "ns=%zu lo=%zu hi=%zu a=%zu\n",
+		    ns, lo, hi, a);
+
+		while (lo < limit && lo < hi) {
+			for (i=0; i < ns; i++)
+				printf("%3zu. %s\n", i+1, arr[i]);
+			fputc('\n', stderr);
+
+			sa = arr[a];
+
+			switch (prompt_ab(sa, sb)) {
+			case 0: lo = a+1; break;
+			case 1: hi = a;   break;
+			}
+
+			a = lo + (hi-lo)/2;
+			fprintf(stderr, "ns=%zu lo=%zu hi=%zu a=%zu\n",
+			    ns, lo, hi, a);
 		}
 
-		if (!top || lo < top) {
-			memmove(&lines[lo+1], &lines[lo],
-			    sizeof(*lines) * (n_sorted-lo));
-			lines[lo] = subject;
-			n_sorted++;
+		if (a < limit) {
+			memmove(arr+a+1, arr+a, sizeof(*arr) * (ns-a));
+			arr[a] = sb;
+			if (ns < limit) ns++;
 		}
 	}
 
-	return n_sorted;
+	return ns;
 }
 
 int
@@ -159,7 +190,7 @@ main(int argc, char **argv)
 {
 	const char *in_name = "<stdin>";
 	char *data, **lines;
-	size_t data_len, n_lines, n_sorted, i;
+	size_t data_len, n_lines, n_sorted, limit, i;
 	FILE *in_file = stdin;
 	int opt_n=0, opt_top=0, c;
 
@@ -191,7 +222,8 @@ main(int argc, char **argv)
 	data = read_all(in_file, in_name, &data_len);
 	lines = to_lines(data, &n_lines);
 	shuffle_ptrs((void **)lines, n_lines);
-	n_sorted = prompt_sort((const char **)lines, n_lines, opt_top);
+	limit = opt_top ? (size_t)opt_top : n_lines;
+	n_sorted = prompt_sort((const char **)lines, n_lines, limit);
 
 	if (opt_n)
 		for (i=0; i < n_sorted; i++)
