@@ -13,13 +13,24 @@ Sorts lines in
 .Ar file
 .Pq or standard input if not given
 by presenting a series of choices to the user.
-Pass
-.Fl n
-to number the output.
 .Pp
 The prompts are output on standard error so that
 .Nm
 may be used as part of a pipe, from an editor, etc.
+.Pp
+Options:
+.Bl -tag -width Ds
+.It Fl n
+Number the output.
+.It Fl t Ar count
+Limit the ranking to the top
+.Ar count
+items.
+This is more efficient than using
+.Xr head 1
+on the output
+as it reduces the number of choices that must be made.
+.El
 .Sh EXIT STATUS
 Returns 0 on success,
 1 on error, or
@@ -27,9 +38,9 @@ Returns 0 on success,
 .Pq 64
 on usage error.
 .Sh EXAMPLES
-Raking a list of games:
+Raking a top-3 of games:
 .Bd -literal -offset indent
-$ prompt-sort -n games.txt
+$ prompt-sort -t3 -n games.txt
   1. ICO
   2. Zelda: The Minish Cap
 choice? 1
@@ -42,9 +53,6 @@ choice? 2
   1. Death Stranding
   2. The Last of Us Part II
   3. Kirby's Return to Dream Land
-  4. ICO
-\&...
-  7. Mario Party 2
 .Ed
 .Sh AUTHORS
 .An Sijmen J. Mjulder

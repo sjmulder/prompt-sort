@@ -103,14 +103,14 @@ prompt_ab(const char *a, const char *b)
 	}
 }
 
-static void
-prompt_sort(const char **lines, size_t n_lines)
+static size_t
+prompt_sort(const char **lines, size_t n_lines, int top)
 {
-	size_t n_sorted, lo,hi,mid;
+	size_t n_sorted=1, lo,hi,mid, i;
 	const char *subject;
 
-	for (n_sorted=1; n_sorted < n_lines; n_sorted++) {
-		subject = lines[n_sorted];
+	for (i=1; i<n_lines; i++) {
+		subject = lines[i];
 		lo = 0;
 		hi = n_sorted;
 
@@ -122,10 +122,15 @@ prompt_sort(const char **lines, size_t n_lines)
 				lo = mid+1;
 		}
 
-		memmove(&lines[lo+1], &lines[lo],
-		    sizeof(*lines) * (n_sorted-lo));
-		lines[lo] = subject;
+		if (!top || lo < (size_t)top) {
+			memmove(&lines[lo+1], &lines[lo],
+			    sizeof(*lines) * (n_sorted-lo));
+			lines[lo] = subject;
+			n_sorted++;
+		}
 	}
+
+	return n_sorted;
 }
 
 int
@@ -133,13 +138,17 @@ main(int argc, char **argv)
 {
 	const char *in_name = "<stdin>";
 	char *data, **lines;
-	size_t data_len, n_lines, i;
+	size_t data_len, n_lines, n_sorted, i;
 	FILE *in_file = stdin;
-	int opt_n=0, c;
+	int opt_n=0, opt_top=0, c;
 
-	while ((c = getopt(argc, argv, "n")) != -1)
+	while ((c = getopt(argc, argv, "nt:")) != -1)
 		switch (c) {
 		case 'n': opt_n = 1; break;
+		case 't':
+			if ((opt_top = (int)atoi(optarg)) < 0)
+				err(EX_USAGE, "bad -t");
+			break;
 		default:
 			fputs(usage, stderr);
 			exit(EX_USAGE);
@@ -161,13 +170,13 @@ main(int argc, char **argv)
 	data = read_all(in_file, in_name, &data_len);
 	lines = to_lines(data, &n_lines);
 	shuffle_ptrs((void **)lines, n_lines);
-	prompt_sort((const char **)lines, n_lines);
+	n_sorted = prompt_sort((const char **)lines, n_lines, opt_top);
 
 	if (opt_n)
-		for (i=0; i<n_lines; i++)
+		for (i=0; i < n_sorted; i++)
 			printf("%3zu. %s\n", i+1, lines[i]);
 	else
-		for (i=0; i<n_lines; i++)
+		for (i=0; i < n_sorted; i++)
 			printf("%s\n", lines[i]);
 
 	return 0;
