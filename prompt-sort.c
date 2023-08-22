@@ -129,7 +129,7 @@ prompt_ab(const char *a, const char *b)
 static size_t
 prompt_sort(const char **arr, size_t len, size_t limit)
 {
-	size_t ns=1, a,b, lo,hi, i;
+	size_t ns=1, a,b, lo,hi;
 	const char *sa, *sb;
 
 	/*
@@ -155,14 +155,7 @@ prompt_sort(const char **arr, size_t len, size_t limit)
 		hi = ns;
 		a = MIN(hi-1, b/2);
 
-		fprintf(stderr, "ns=%zu lo=%zu hi=%zu a=%zu\n",
-		    ns, lo, hi, a);
-
 		while (lo < limit && lo < hi) {
-			for (i=0; i < ns; i++)
-				printf("%3zu. %s\n", i+1, arr[i]);
-			fputc('\n', stderr);
-
 			sa = arr[a];
 
 			switch (prompt_ab(sa, sb)) {
@@ -171,8 +164,6 @@ prompt_sort(const char **arr, size_t len, size_t limit)
 			}
 
 			a = lo + (hi-lo)/2;
-			fprintf(stderr, "ns=%zu lo=%zu hi=%zu a=%zu\n",
-			    ns, lo, hi, a);
 		}
 
 		if (a < limit) {
