@@ -14,7 +14,7 @@ clean:
 
 install: all
 	${INSTALL} -d ${DESTDIR}${PREFIX}/bin
-	${INSTALL} -d ${DESTDIR}${PREFIX}/man/man1
+	${INSTALL} -d ${DESTDIR}${MANPREFIX}/man1
 	${INSTALL} -m755 prompt-sort   ${DESTDIR}${PREFIX}/bin/
 	${INSTALL} -m644 prompt-sort.1 ${DESTDIR}${MANPREFIX}/man1/
 
